@@ -1,3 +1,5 @@
+# php storm project
+/.idea
 
 ###> symfony/framework-bundle ###
 /.env.local
