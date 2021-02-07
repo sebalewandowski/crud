@@ -1,0 +1,23 @@
+version: '3'
+
+services:
+  application:
+    build: ./
+    volumes:
+      - .:/var/www/crud
+    networks:
+      - crud
+
+  nginx:
+    image: nginx:latest
+    ports:
+      - "8082:8082"
+    volumes:
+      - ./crud:/crud
+      - ./docker-files/nginx.conf:/etc/nginx/conf.d/site.conf
+    networks:
+      - crud
+
+networks:
+  crud:
+    driver: bridge
