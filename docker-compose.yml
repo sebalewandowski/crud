@@ -1,23 +1,40 @@
 version: '3'
 
 services:
+
   application:
-    build: ./
+    build: docker/application
     volumes:
       - .:/var/www/crud
-    networks:
-      - crud
-
-  nginx:
-    image: nginx:latest
+      - ./docker/crud/php.conf:/usr/local/etc/php/php.conf
+      - ./docker/crud/nginx.conf:/etc/nginx/conf.d/nginx.conf
     ports:
-      - "8082:8082"
-    volumes:
-      - ./crud:/crud
-      - ./docker-files/nginx.conf:/etc/nginx/conf.d/site.conf
-    networks:
-      - crud
+      - ${APPLICATION_PORT:-8082}:443
 
-networks:
-  crud:
-    driver: bridge
+  db:
+    image: mysql:latest
+    environment:
+      - MYSQL_ROOT_PASSWORD=${MYSQL_ROOT_PASSWORD:-password}
+      - MYSQL_DATABASE=${MYSQL_DATABASE:-crud}
+      - MYSQL_USER=${MYSQL_USER:-crud}
+      - MYSQL_PASSWORD=${MYSQL_PASSWORD:-crud}
+    ports:
+      - ${MYSQL_HOST_PORT:-3306}:3306
+    command: --max_allowed_packet=512M
+    volumes:
+      - mysql:/var/lib/mysql
+      - ./tmp:/data/tmp
+      - .:/var/www/crud
+
+  phpmyadmin:
+    image: phpmyadmin/phpmyadmin
+    ports:
+      - ${PHP_MY_ADMIN_PORT:-8091}:8082
+
+  mail:
+    image: mailhog/mailhog:v1.0.0
+    ports:
+      - ${MAILHOG_PORT:-8025}:8025
+
+volumes:
+  mysql:
